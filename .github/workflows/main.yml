@@ -39,7 +39,7 @@ jobs:
               with:
                 # Hacer push a docker hub de la imagen recien construida
                 push: true
-                tags: ${{ secrets.DOCKERHUB_USERNAME }}/ventas_api:latest
+                tags: ${{ secrets.DOCKERHUB_USERNAME }}/api_despachos:latest
                 context: ./Springboot-API-REST-DESPACHO
                 file: ./Springboot-API-REST-DESPACHO/Dockerfile
         
