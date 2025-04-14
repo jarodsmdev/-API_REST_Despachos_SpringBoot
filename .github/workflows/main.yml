@@ -1,4 +1,4 @@
-name: Build & Deploy APIs
+name: Build & Deploy API
 
 on:
   push:
