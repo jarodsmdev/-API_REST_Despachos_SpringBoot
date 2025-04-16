@@ -30,4 +30,5 @@ public class Despacho {
     @NotBlank(message = "La dirección es obligatoria")
     private String direccionCompra;
     private Long valorCompra;
+    private boolean despachado = false;
 }

@@ -34,6 +34,7 @@ public class DespachoServiceImpl implements DespachoService{
             existingDespacho.setIdCompra(despacho.getIdCompra());
             existingDespacho.setDireccionCompra(despacho.getDireccionCompra());
             existingDespacho.setValorCompra(despacho.getValorCompra());
+            existingDespacho.setDespachado(despacho.isDespachado());
             return despachoRepository.save(existingDespacho);
         }).orElseThrow(() -> new DespachoNotFoundException("Despacho no encontrado con ID: " + idDespacho));
     }
