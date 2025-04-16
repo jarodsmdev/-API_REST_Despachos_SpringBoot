@@ -74,7 +74,7 @@ jobs:
               with:
                 host: ${{ env.SERVIDOR_DESPACHO }}
                 username: ${{ secrets.EC2_USERNAME }}
-                key: ${{ env.EC2_KEY }}
+                key: ${{ secrets.SSH_KEY_CITT }}
                 port: ${{ secrets.EC2_SSH_PORT }}
                 script: |
                   mkdir -p /home/ubuntu/despacho/
