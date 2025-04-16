@@ -59,26 +59,29 @@ jobs:
                 DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
               run: doppler setup --token $DOPPLER_TOKEN
 
-              
 
-            - name: Login SSH on EC2 to Deploy
+            - name: Obtener secretos desde Doppler
               env:
                 DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
               run: |
-                # Exportar variables desde Doppler CLI
-                export SERVIDOR_DESPACHO=$(doppler secrets get SERVIDOR_DESPACHO --plain)
-                export SSH_KEY=$(doppler secrets get SSH_KEY --plain)
-            
-                # Usar ssh-action
-                ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@$SERVIDOR_DESPACHO << EOF
+                echo "EC2_KEY=$(doppler secrets get EC2_KEY --plain)" >> $GITHUB_ENV
+                echo "SERVIDOR_DESPACHO=$(doppler secrets get SERVIDOR_DESPACHO --plain)" >> $GITHUB_ENV
+
+              
+
+            - name: Desplegar en EC2 mediante SSH
+              uses: appleboy/ssh-action@v1
+              with:
+                host: ${{ env.SERVIDOR_DESPACHO }}
+                username: ${{ secrets.EC2_USERNAME }}
+                key: ${{ env.EC2_KEY }}
+                port: ${{ secrets.EC2_SSH_PORT }}
+                script: |
                   mkdir -p /home/ubuntu/despacho/
                   cd /home/ubuntu/despacho/
-                  # Instalación de Docker y Docker Compose (si no están instalados)
                   sudo apt update -y
                   sudo apt install -y docker.io docker-compose
-                  # Hacer un pull de la imagen de Docker Hub
                   sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/api_despachos:latest
-                  # Ejecutar el contenedor en segundo plano
                   sudo docker run -d -p 80:8081 \
                     -e DB_ENDPOINT=${{ secrets.DB_ENDPOINT }} \
                     -e DB_PORT=${{ secrets.DB_PORT }} \
@@ -86,4 +89,3 @@ jobs:
                     -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
                     -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
                     ${{ secrets.DOCKERHUB_USERNAME }}/api_despachos:latest
-                EOF
