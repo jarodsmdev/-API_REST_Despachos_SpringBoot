@@ -1,9 +1,9 @@
 name: Build & Deploy API
 
 on:
-  push:
-    branches:
-      - main
+  repository_dispatch:
+    types:
+      - backend-despacho
 
 jobs:
     build:
