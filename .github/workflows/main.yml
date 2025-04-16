@@ -50,26 +50,40 @@ jobs:
                 username: ${{ secrets.DOCKERHUB_USERNAME }}
                 password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+
+            - name: Instalar Doppler CLI
+              uses: dopplerhq/cli-action@v3
+
+            - name: Configurar Doppler CLI
+              env:
+                DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+              run: doppler setup --token $DOPPLER_TOKEN
+
+              
+
             - name: Login SSH on EC2 to Deploy
-              uses: appleboy/ssh-action@v1
-              with:
-                host: ${{ secrets.EC2_IP_REMOTE }}
-                username: ${{ secrets.EC2_USERNAME }}
-                key: ${{ secrets.EC2_KEY }}
-                port: ${{ secrets.EC2_SSH_PORT }}
-                script: |
+              env:
+                DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+              run: |
+                # Exportar variables desde Doppler CLI
+                export SERVIDOR_DESPACHO=$(doppler secrets get SERVIDOR_DESPACHO --plain)
+                export SSH_KEY=$(doppler secrets get SSH_KEY --plain)
+            
+                # Usar ssh-action
+                ssh -i "$SSH_KEY" -o StrictHostKeyChecking=no ${{ secrets.EC2_USERNAME }}@$SERVIDOR_DESPACHO << EOF
                   mkdir -p /home/ubuntu/despacho/
                   cd /home/ubuntu/despacho/
                   # Instalación de Docker y Docker Compose (si no están instalados)
                   sudo apt update -y
                   sudo apt install -y docker.io docker-compose
-                  # Hacer un pull de la imagen de docker hub
+                  # Hacer un pull de la imagen de Docker Hub
                   sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/api_despachos:latest
                   # Ejecutar el contenedor en segundo plano
                   sudo docker run -d -p 80:8081 \
-                  -e DB_ENDPOINT=${{ secrets.DB_ENDPOINT }} \
-                  -e DB_PORT=${{ secrets.DB_PORT }} \
-                  -e DB_NAME=${{ secrets.DB_NAME }} \
-                  -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
-                  -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-                  ${{ secrets.DOCKERHUB_USERNAME }}/api_despachos:latest
+                    -e DB_ENDPOINT=${{ secrets.DB_ENDPOINT }} \
+                    -e DB_PORT=${{ secrets.DB_PORT }} \
+                    -e DB_NAME=${{ secrets.DB_NAME }} \
+                    -e DB_USERNAME=${{ secrets.DB_USERNAME }} \
+                    -e DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
+                    ${{ secrets.DOCKERHUB_USERNAME }}/api_despachos:latest
+                EOF
