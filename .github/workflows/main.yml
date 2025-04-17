@@ -82,7 +82,7 @@ jobs:
                   sudo apt update -y
                   sudo apt install -y docker.io docker-compose
                   sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/api_despachos:latest
-                  sudo docker run -d -p 80:8081 \
+                  sudo docker run -d -p 8081:8081 \
                     -e DB_ENDPOINT=${{ secrets.DB_ENDPOINT }} \
                     -e DB_PORT=${{ secrets.DB_PORT }} \
                     -e DB_NAME=${{ secrets.DB_NAME }} \
